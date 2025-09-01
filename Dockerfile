@@ -1,32 +1,29 @@
-# Use a lightweight JDK image for building
-FROM eclipse-temurin:17-jdk-alpine AS build
+# ===== Build Stage =====
+# Use Maven + JDK for compiling and packaging
+FROM maven:3.9.3-eclipse-temurin-17 AS build
 
-# Set working directory
 WORKDIR /app
 
 # Copy only pom.xml first for dependency caching
 COPY pom.xml .
-RUN mkdir -p src && echo "" > src/.keep
-
-# Download dependencies (caches unless pom.xml changes)
-RUN ./mvnw dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
 
-# Build the application
-RUN ./mvnw package -DskipTests
+# Build the Spring Boot JAR (skip tests to speed up build)
+RUN mvn package -DskipTests
 
-# Use a lightweight JRE image for running
+# ===== Run Stage =====
+# Use lightweight JRE Alpine image for running the app
 FROM eclipse-temurin:17-jre-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy the JAR from build stage
+# Copy the JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port (optional, default Spring Boot port)
+# Expose default Spring Boot port
 EXPOSE 8080
 
 # Run the JAR
