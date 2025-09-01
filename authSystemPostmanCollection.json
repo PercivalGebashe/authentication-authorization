@@ -1,0 +1,158 @@
+{
+  "info": {
+    "name": "Auth System Complete Flow",
+    "_postman_id": "auth-system-complete-001",
+    "description": "Full workflow: auto-registration/login, manual login, failure tests, and protected endpoints with JWT",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User - Auto Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailAddress\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"John Doe\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api","v1","auth","register"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Auto login after registration",
+              "let jsonData = pm.response.json();",
+              "if(jsonData.success){",
+              "    pm.sendRequest({",
+              "        url: 'http://localhost:8080/api/v1/auth/login',",
+              "        method: 'POST',",
+              "        header: {'Content-Type': 'application/json'},",
+              "        body: { mode: 'raw', raw: JSON.stringify({",
+              "            emailAddress: 'user@example.com',",
+              "            password: 'password123'",
+              "        }) }",
+              "    }, function (err, res) {",
+              "        let loginData = res.json();",
+              "        if(loginData.success && loginData.token){",
+              "            pm.environment.set('JWT_TOKEN', loginData.token);",
+              "        }",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Manual Success",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailAddress\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api","v1","auth","login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let jsonData = pm.response.json();",
+              "if(jsonData.success && jsonData.token){",
+              "    pm.environment.set('JWT_TOKEN', jsonData.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Invalid Credentials",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailAddress\": \"user@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api","v1","auth","login"]
+        }
+      }
+    },
+    {
+      "name": "Get Profile - Protected Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{JWT_TOKEN}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/user/profile",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api","v1","user","profile"]
+        }
+      }
+    },
+    {
+      "name": "Get Profile - Missing JWT",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/user/profile",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api","v1","user","profile"]
+        }
+      }
+    },
+    {
+      "name": "Get Profile - Invalid JWT",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer invalid.token.here" }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/user/profile",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api","v1","user","profile"]
+        }
+      }
+    }
+  ]
+}

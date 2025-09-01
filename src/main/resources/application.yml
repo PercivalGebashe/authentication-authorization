@@ -1,3 +1,38 @@
 spring:
   application:
     name: authentication-authorization
+  datasource:
+    driver-class-name: ${DB_DRIVER}
+    url: jdbc:${DB_SCHEME}://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  mail:
+    host:
+    port:
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  config:
+    import: optional:file:.env[properties]
+
+
+security:
+  jwt:
+    secret-key: ${JWT_SECRET}
+    expiration-time: 36000000

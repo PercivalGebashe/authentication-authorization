@@ -1,0 +1,23 @@
+# Build output - we only need the JAR
+target/
+build/
+
+# Version control
+.git/
+
+# IDE/editor files
+*.iml
+.idea/
+.vscode/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (optional, keep secrets out)
+.env
