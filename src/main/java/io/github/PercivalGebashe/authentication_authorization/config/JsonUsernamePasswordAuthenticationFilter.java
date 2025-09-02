@@ -2,7 +2,7 @@ package io.github.PercivalGebashe.authentication_authorization.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.PercivalGebashe.authentication_authorization.dto.LoginRequestDTO;
-import io.github.PercivalGebashe.authentication_authorization.dto.LoginResponseDTO;
+import io.github.PercivalGebashe.authentication_authorization.dto.ApiResponseDTO;
 import io.github.PercivalGebashe.authentication_authorization.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +14,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -53,12 +54,30 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
         var userDetails = (org.springframework.security.core.userdetails.User) authResult.getPrincipal();
         String token = jwtService.generateToken(userDetails);
 
-        LoginResponseDTO loginResponse = new LoginResponseDTO(
-                true, "Login successful",
-                token);
+        ApiResponseDTO loginResponse = new ApiResponseDTO(
+                true,
+                "Login successful",
+                Map.of("token", token)
+        );
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         objectMapper.writeValue(response.getWriter(), loginResponse);
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException {
+        ApiResponseDTO errorResponse = new ApiResponseDTO(
+                false,
+                "Invalid email or password",
+                null
+        );
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 }

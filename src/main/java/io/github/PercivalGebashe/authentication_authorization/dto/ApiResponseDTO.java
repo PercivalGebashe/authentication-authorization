@@ -2,8 +2,11 @@ package io.github.PercivalGebashe.authentication_authorization.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.Optional;
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record RegistrationResponseDTO(boolean success, Optional<Integer> userId, String message) {
-}
+public record ApiResponseDTO(
+        boolean success,
+        String message,
+        Map<String, Object> data
+) {}

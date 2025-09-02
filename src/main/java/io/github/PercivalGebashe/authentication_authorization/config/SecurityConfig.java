@@ -1,9 +1,7 @@
 package io.github.PercivalGebashe.authentication_authorization.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.PercivalGebashe.authentication_authorization.repository.UserLoginDetailsRepository;
 import io.github.PercivalGebashe.authentication_authorization.service.JwtService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,14 +30,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserLoginDetailsRepository loginDetailsRepository;
-//    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtService jwtService;
 
     public SecurityConfig(
             UserLoginDetailsRepository loginDetailsRepository,
             JwtService jwtService) {
         this.loginDetailsRepository = loginDetailsRepository;
-//        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtService = jwtService;
     }
 
@@ -100,8 +96,7 @@ public class SecurityConfig {
 
     @Bean
     AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService());
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
