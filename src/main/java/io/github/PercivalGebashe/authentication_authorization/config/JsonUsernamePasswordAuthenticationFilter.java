@@ -3,6 +3,8 @@ package io.github.PercivalGebashe.authentication_authorization.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.PercivalGebashe.authentication_authorization.dto.LoginRequestDTO;
 import io.github.PercivalGebashe.authentication_authorization.dto.ApiResponseDTO;
+import io.github.PercivalGebashe.authentication_authorization.entity.UserLoginDetails;
+import io.github.PercivalGebashe.authentication_authorization.exception.AccountNotVerifiedException;
 import io.github.PercivalGebashe.authentication_authorization.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,13 +35,20 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
             LoginRequestDTO loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequestDTO.class);
 
             UsernamePasswordAuthenticationToken authRequest =
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.emailAddress(),
-                            loginRequest.password()
-                    );
+                new UsernamePasswordAuthenticationToken(
+                    loginRequest.emailAddress(),
+                    loginRequest.password()
+                );
 
             setDetails(request, authRequest);
-            return this.getAuthenticationManager().authenticate(authRequest);
+            Authentication authentication = this.getAuthenticationManager().authenticate(authRequest);
+
+            var userDetails = (UserLoginDetails) authentication.getPrincipal();
+            if (!userDetails.isEnabled()) {
+                throw new AccountNotVerifiedException();
+            }
+
+            return authentication;
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse login request", e);
@@ -51,13 +60,13 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException {
-        var userDetails = (org.springframework.security.core.userdetails.User) authResult.getPrincipal();
+        var userDetails = (UserLoginDetails) authResult.getPrincipal();
         String token = jwtService.generateToken(userDetails);
 
         ApiResponseDTO loginResponse = new ApiResponseDTO(
-                true,
-                "Login successful",
-                Map.of("token", token)
+            true,
+            "Login successful",
+            Map.of("token", token)
         );
 
         response.setContentType("application/json");
@@ -70,9 +79,9 @@ public class JsonUsernamePasswordAuthenticationFilter extends UsernamePasswordAu
                                               HttpServletResponse response,
                                               AuthenticationException failed) throws IOException {
         ApiResponseDTO errorResponse = new ApiResponseDTO(
-                false,
-                "Invalid email or password",
-                null
+            false,
+            failed.getMessage() != null ? failed.getMessage() : "Invalid email or password",
+            null
         );
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

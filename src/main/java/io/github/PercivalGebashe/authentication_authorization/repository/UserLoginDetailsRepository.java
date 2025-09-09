@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface UserLoginDetailsRepository extends JpaRepository<UserLoginDetails, Integer> {
     Optional<UserLoginDetails> findByEmailAddress(String email);
+
+    Optional<UserLoginDetails> findByConfirmationToken(String confirmationToken);
 }

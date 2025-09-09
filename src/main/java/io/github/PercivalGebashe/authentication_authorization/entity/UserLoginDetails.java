@@ -2,15 +2,17 @@ package io.github.PercivalGebashe.authentication_authorization.entity;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "user_login_details", schema = "public")
-public class UserLoginDetails{
+public class UserLoginDetails implements UserDetails {
 
     @Id
     @Column(name = "UserId")
@@ -34,9 +36,9 @@ public class UserLoginDetails{
     private String confirmationToken;
 
     @Column(name = "TokenGenerationTime")
-    private Timestamp tokenGenerationTime;
+    private Timestamp tokenExpirationTime;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "EmailValidationStatusId", referencedColumnName = "EmailValidationStatusId", nullable = false)
     private EmailValidationStatus emailValidationStatus;
 
@@ -94,12 +96,12 @@ public class UserLoginDetails{
         this.confirmationToken = confirmationToken;
     }
 
-    public Timestamp getTokenGenerationTime() {
-        return tokenGenerationTime;
+    public Timestamp getTokenExpirationTime() {
+        return tokenExpirationTime;
     }
 
-    public void setTokenGenerationTime(Timestamp tokenGenerationTime) {
-        this.tokenGenerationTime = tokenGenerationTime;
+    public void setTokenExpirationTime(Timestamp tokenExpirationTime) {
+        this.tokenExpirationTime = tokenExpirationTime;
     }
 
     public EmailValidationStatus getEmailValidationStatus() {
@@ -135,10 +137,38 @@ public class UserLoginDetails{
                 ", passwordHash='" + passwordHash + '\'' +
                 ", passwordSalt='" + passwordSalt + '\'' +
                 ", confirmationToken='" + confirmationToken + '\'' +
-                ", tokenGenerationTime=" + tokenGenerationTime +
+                ", tokenGenerationTime=" + tokenExpirationTime +
                 ", emailValidationStatus=" + emailValidationStatus +
                 ", passwordRecoveryToken='" + passwordRecoveryToken + '\'' +
                 ", passwordRecoveryTime=" + passwordRecoveryTime +
                 '}';
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if(null == userAccountDetails || null == userAccountDetails.getUserRoles()) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return userAccountDetails.getUserRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getRole().getRoleDescription()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getPassword() {
+        return this.passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.emailAddress;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return null != this.emailValidationStatus &&
+            null != this.emailValidationStatus.getEmailValidationStatusId() &&
+            Integer.valueOf(2).equals(emailValidationStatus.getEmailValidationStatusId());
     }
 }

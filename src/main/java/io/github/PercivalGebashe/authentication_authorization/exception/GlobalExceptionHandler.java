@@ -1,6 +1,7 @@
 package io.github.PercivalGebashe.authentication_authorization.exception;
 
 import io.github.PercivalGebashe.authentication_authorization.dto.ApiResponseDTO;
+import jakarta.mail.MessagingException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +31,28 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponseDTO(false, "Account is locked", null));
     }
 
+    @ExceptionHandler(AccountNotVerifiedException.class)
+    public ResponseEntity<ApiResponseDTO> handleAccountNotVerified(AccountNotVerifiedException ex) {
+        ApiResponseDTO response = new ApiResponseDTO(false, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponseDTO> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         String message = "User with the given email already exists.";
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ApiResponseDTO(false, message, null));
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<ApiResponseDTO> handleMessagingException(MessagingException ex){
+        System.out.println(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponseDTO(
+                        false,
+                        "Sending email verification failed.",
+                        null
+                ));
     }
 
     @ExceptionHandler(Exception.class)

@@ -14,16 +14,20 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  output:
+    ansi:
+      enabled: ALWAYS
   sql:
     init:
       mode: ALWAYS
-      platform: ${SQL_PLATFORM}
+#      platform: ${SQL_PLATFORM}
 
   mail:
-    host:
-    port:
-    username:
-    password:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SUPPORT_EMAIL}
+    password: ${APP_PASSWORD}
     properties:
       mail:
         smtp:

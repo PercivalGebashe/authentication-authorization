@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,9 +31,7 @@ public class SecurityConfig {
     private final UserLoginDetailsRepository loginDetailsRepository;
     private final JwtService jwtService;
 
-    public SecurityConfig(
-            UserLoginDetailsRepository loginDetailsRepository,
-            JwtService jwtService) {
+    public SecurityConfig(UserLoginDetailsRepository loginDetailsRepository, JwtService jwtService) {
         this.loginDetailsRepository = loginDetailsRepository;
         this.jwtService = jwtService;
     }
@@ -42,8 +39,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception {
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtService, userDetailsService());
-        var jsonLoginFilter = new JsonUsernamePasswordAuthenticationFilter(authManager, jwtService);
-        jsonLoginFilter.setFilterProcessesUrl("/api/v1/auth/login"); // JSON login endpoint
+        JsonUsernamePasswordAuthenticationFilter jsonLoginFilter = new JsonUsernamePasswordAuthenticationFilter(authManager, jwtService);
+        jsonLoginFilter.setFilterProcessesUrl("/api/v1/auth/login");
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -59,9 +56,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource(){
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://.render.com","http://localhost:8080"));
+        configuration.setAllowedOrigins(List.of("https://.render.com", "http://localhost:8080"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
@@ -71,31 +68,23 @@ public class SecurityConfig {
     }
 
     @Bean
-    UserDetailsService userDetailsService(){
-        return emailAddress -> {
-            var userLoginDetails = loginDetailsRepository.findByEmailAddress(emailAddress)
-                    .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
-
-            return User.builder()
-                    .username(userLoginDetails.getEmailAddress())
-                    .password(userLoginDetails.getPasswordHash())
-                    .roles("USER") // adjust roles as needed
-                    .build();
-        };
+    UserDetailsService userDetailsService() {
+        return emailAddress -> loginDetailsRepository.findByEmailAddress(emailAddress)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + emailAddress));
     }
 
     @Bean
-    PasswordEncoder passwordEncoder(){
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
+    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
     @Bean
-    AuthenticationProvider authenticationProvider(){
+    AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
         return provider;

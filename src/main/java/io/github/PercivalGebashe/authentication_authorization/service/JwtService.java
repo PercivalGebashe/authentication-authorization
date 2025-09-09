@@ -34,60 +34,49 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails){
-        System.out.println("Generating token public");
-        String token = generateToken(new HashMap<>(), userDetails);
-        System.out.println("Token public: " + token);
-        return token;
+        return generateToken(new HashMap<>(), userDetails);
     }
 
     private String generateToken(HashMap<String, Object> extraClaims, UserDetails userDetails){
-        System.out.println("Generating token private");
         return buildToken(extraClaims, userDetails);
     }
 
     public Date extractExpiration(String token){
-        System.out.println("Getting expiration from claim");
         return extractClaim(token, Claims::getExpiration);
     }
 
     private boolean isTokenExpired(String token){
-        System.out.println("Checking expiration");
         return extractExpiration(token).before(new Date());
     }
 
     private String buildToken(
             HashMap<String, Object> extraClaims,
             UserDetails userDetails){
-        System.out.println("Building token");
         return Jwts
-                .builder()
-                .claims(extraClaims)
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSignKey())
-                .compact();
+            .builder()
+            .claims(extraClaims)
+            .subject(userDetails.getUsername())
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+            .signWith(getSignKey())
+            .compact();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails){
-        System.out.println("Checking token validity");
         String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     private Claims extractAllClaims(String token) {
-        System.out.println("Extracting all claims");
         return Jwts
-                .parser()
-                .verifyWith(getSignKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+            .parser()
+            .verifyWith(getSignKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
     }
 
     private SecretKey getSignKey(){
-        System.out.println("Getting SKey");
-        System.out.println("Key:" + secretKey);
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }

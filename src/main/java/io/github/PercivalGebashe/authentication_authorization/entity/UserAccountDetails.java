@@ -1,8 +1,7 @@
 package io.github.PercivalGebashe.authentication_authorization.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -14,13 +13,16 @@ public class UserAccountDetails {
     @Column(name = "UserId")
     private Integer userId;
 
-    @Column(name = "FirstName")
+    @Column(name = "FirstName", nullable = false)
     private String firstName;
 
-    @Column(name = "LastName")
+    @Column(name = "LastName", nullable = false)
     private String lastName;
 
-    @OneToOne(mappedBy = "userAccountDetails", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "userAccountDetails", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserRole> userRoles = new HashSet<>();
+
+    @OneToOne(mappedBy = "userAccountDetails", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserLoginDetails userLoginDetails;
 
     public Integer getUserId() {
@@ -45,6 +47,14 @@ public class UserAccountDetails {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public Set<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(Set<UserRole> userRoles) {
+        this.userRoles = userRoles;
     }
 
     public UserLoginDetails getUserLoginDetails() {
