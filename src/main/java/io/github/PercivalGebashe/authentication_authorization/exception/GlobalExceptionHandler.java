@@ -22,19 +22,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ApiResponseDTO> handleDisabledAccount(DisabledException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ApiResponseDTO(false, "Account is disabled", null));
+                .body(new ApiResponseDTO(false, "Please verify your email first", null));
     }
 
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<ApiResponseDTO> handleLockedAccount(LockedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ApiResponseDTO(false, "Account is locked", null));
-    }
-
-    @ExceptionHandler(AccountNotVerifiedException.class)
-    public ResponseEntity<ApiResponseDTO> handleAccountNotVerified(AccountNotVerifiedException ex) {
-        ApiResponseDTO response = new ApiResponseDTO(false, ex.getMessage(), null);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
