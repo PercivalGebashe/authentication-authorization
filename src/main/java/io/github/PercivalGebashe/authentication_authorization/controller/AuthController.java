@@ -4,6 +4,7 @@ import io.github.PercivalGebashe.authentication_authorization.dto.ApiResponseDTO
 import io.github.PercivalGebashe.authentication_authorization.dto.RegistrationRequestDTO;
 import io.github.PercivalGebashe.authentication_authorization.service.AuthService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/register", consumes = "application/json")
-    public ResponseEntity<ApiResponseDTO> register(@RequestBody RegistrationRequestDTO requestDTO) throws MessagingException {
+    public ResponseEntity<ApiResponseDTO> register(@Valid @RequestBody RegistrationRequestDTO requestDTO) throws MessagingException {
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
         System.out.println("Base URL:" + baseUrl);
         Integer userId = authService.registerUser(requestDTO, baseUrl);
