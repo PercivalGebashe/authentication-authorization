@@ -20,7 +20,8 @@ public class UserAccountController {
     }
 
     @DeleteMapping("/request-delete")
-    public ResponseEntity<ApiResponseDTO> requestDeleteAccount(@RequestParam String email) throws MessagingException {
+    public ResponseEntity<ApiResponseDTO> requestDeleteAccount(@RequestParam(name = "email") String email) throws MessagingException {
+        System.out.println("vsdoivhhi");
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
         userAccountService.requestDeleteAccount(email, baseUrl);
 

@@ -19,7 +19,7 @@ public class UserAccountDetails {
     @Column(name = "LastName", nullable = false)
     private String lastName;
 
-    @OneToMany(mappedBy = "userAccountDetails", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userAccountDetails", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
 
     @OneToOne(mappedBy = "userAccountDetails", cascade = CascadeType.ALL, orphanRemoval = true)

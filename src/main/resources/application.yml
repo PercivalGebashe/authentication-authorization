@@ -18,9 +18,9 @@ spring:
   output:
     ansi:
       enabled: ALWAYS
-  sql:
-    init:
-      mode: ALWAYS
+#  sql:
+#    init:
+#      mode: ALWAYS
 #      platform: ${SQL_PLATFORM}
 
   mail:
